@@ -7,6 +7,8 @@ export declare class BookingService {
     private readonly prisma;
     private readonly realtimeGateway;
     constructor(prisma: PrismaService, realtimeGateway: RealtimeGateway);
+    private buildRoomCatalog;
+    private ensureCampusRooms;
     listRooms(): Promise<{
         id: string;
         name: string;
@@ -37,6 +39,7 @@ export declare class BookingService {
         id: string;
         title: string;
         status: import("@prisma/client").$Enums.BookingStatus;
+        roomId: string;
         startsAt: Date;
         endsAt: Date;
     }>;

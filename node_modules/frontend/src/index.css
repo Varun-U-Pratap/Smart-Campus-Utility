@@ -6,8 +6,14 @@
 
 :root {
   --bg: #f8fafc;
+  --fg: #0f172a;
   --primary: #6366f1;
   --accent: #10b981;
+}
+
+.dark {
+  --bg: #040712;
+  --fg: #e7edf8;
 }
 
 @layer base {
@@ -22,11 +28,26 @@
     background: radial-gradient(circle at 12% 12%, rgba(99, 102, 241, 0.18), transparent 38%),
       radial-gradient(circle at 88% 84%, rgba(16, 185, 129, 0.16), transparent 35%),
       var(--bg);
-    color: #0f172a;
+    color: var(--fg);
     font-family: 'Inter', sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+
+  .dark body {
+    background: radial-gradient(circle at 12% 12%, rgba(99, 102, 241, 0.24), transparent 38%),
+      radial-gradient(circle at 86% 78%, rgba(16, 185, 129, 0.2), transparent 42%),
+      linear-gradient(165deg, #010208 0%, #050914 48%, #02030a 100%);
+  }
+
+  .theme-float-orb {
+    animation: themeFloat 13s ease-in-out infinite;
+  }
+
+  .theme-float-orb-slow {
+    animation: themeFloatSlow 18s ease-in-out infinite;
   }
 
   h1,
@@ -38,6 +59,26 @@
   }
 }
 
+@keyframes themeFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(12px, -16px, 0);
+  }
+}
+
+@keyframes themeFloatSlow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, 14px, 0);
+  }
+}
+
 @layer components {
   .font-display {
     font-family: 'Poppins', sans-serif;
@@ -45,13 +86,16 @@
 
   .field {
     @apply w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200;
+    @apply dark:border-cyan-300/25 dark:bg-[#0B1832] dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-cyan-300 dark:focus:ring-cyan-300/25;
   }
 
   .btn-primary {
     @apply inline-flex items-center rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.35)] transition hover:scale-[1.02] hover:bg-indigo-600;
+    @apply dark:bg-indigo-500 dark:shadow-[0_10px_24px_rgba(99,102,241,0.55)] dark:hover:bg-indigo-400;
   }
 
   .btn-muted {
     @apply inline-flex items-center rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200;
+    @apply dark:bg-deepmidnight-elevated dark:text-slate-200 dark:hover:bg-slate-700/50;
   }
 }

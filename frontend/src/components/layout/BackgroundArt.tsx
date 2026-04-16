@@ -1,8 +1,13 @@
 export const BackgroundArt = () => {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:42px_42px] opacity-40 dark:bg-[linear-gradient(rgba(56,189,248,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.07)_1px,transparent_1px)]" />
+
+      <div className="theme-float-orb absolute left-[10%] top-[12%] h-56 w-56 rounded-full bg-indigo-400/20 blur-3xl dark:bg-cyan-400/20" />
+      <div className="theme-float-orb-slow absolute bottom-[8%] right-[8%] h-64 w-64 rounded-full bg-emerald-300/20 blur-3xl dark:bg-emerald-400/18" />
+
       <svg
-        className="absolute -top-24 left-[-120px] h-[420px] w-[420px] opacity-70"
+        className="absolute -top-24 left-[-120px] h-[420px] w-[420px] opacity-70 dark:opacity-85"
         viewBox="0 0 420 420"
         fill="none"
       >
@@ -19,7 +24,7 @@ export const BackgroundArt = () => {
       </svg>
 
       <svg
-        className="absolute -bottom-24 right-[-140px] h-[420px] w-[420px] opacity-70"
+        className="absolute -bottom-24 right-[-140px] h-[420px] w-[420px] opacity-70 dark:opacity-85"
         viewBox="0 0 420 420"
         fill="none"
       >

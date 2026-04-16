@@ -21,29 +21,29 @@ const AnnouncementItem = memo(
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
-        className="rounded-xl border border-white/70 bg-white/85 p-4 shadow-sm"
+        className="rounded-xl border border-white/70 bg-white/85 p-4 shadow-sm dark:border-cyan-300/20 dark:bg-deepmidnight-elevated/85"
       >
         <div className="flex flex-wrap items-center gap-2">
           {item.isSticky ? (
-            <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+            <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700 dark:bg-amber-400/20 dark:text-amber-200">
               Sticky
             </span>
           ) : null}
-          <span className="rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-600">
+          <span className="rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-600 dark:bg-cyan-400/15 dark:text-cyan-200">
             {item.category}
           </span>
-          <span className="text-xs text-slate-500">by {item.author.fullName}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-300">by {item.author.fullName}</span>
         </div>
 
-        <h4 className="mt-2 text-base font-semibold text-slate-900">{item.title}</h4>
-        <p className="mt-1 text-sm text-slate-600">{item.body}</p>
+        <h4 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">{item.title}</h4>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.body}</p>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-1">
             {item.tags.map(({ tag }) => (
               <span
                 key={tag.id}
-                className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700"
+                className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200"
               >
                 #{tag.name}
               </span>
@@ -140,7 +140,7 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
       </div>
 
       {sticky.length > 0 ? (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-800">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-[#1A1B1F] dark:text-amber-200">
           <p className="font-semibold">Priority Notice</p>
           <p>{sticky[0]?.title}</p>
         </div>

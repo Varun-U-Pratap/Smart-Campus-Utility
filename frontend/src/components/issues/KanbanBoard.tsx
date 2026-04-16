@@ -16,15 +16,15 @@ const IssueCard = memo(({ issue }: { issue: Issue }) => {
     <motion.article
       layout
       whileHover={{ scale: 1.015 }}
-      className="cursor-grab rounded-xl border border-white/70 bg-white/85 p-3 shadow-sm"
+      className="cursor-grab rounded-xl border border-white/70 bg-white/85 p-3 shadow-sm dark:border-indigo-300/20 dark:bg-deepmidnight-elevated/85"
       draggable
       data-issue-id={issue.id}
     >
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-500">
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-500 dark:text-cyan-300">
         {issue.ticketNo}
       </p>
-      <h4 className="mt-1 text-sm font-semibold text-slate-900">{issue.title}</h4>
-      <div className="mt-2 flex items-center justify-between text-xs text-slate-600">
+      <h4 className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{issue.title}</h4>
+      <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
         <span>{issue.category}</span>
         <span>{issue.priority}</span>
       </div>
@@ -98,17 +98,17 @@ export const KanbanBoard = ({ token }: KanbanBoardProps) => {
       />
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading board...</p>
+        <p className="text-sm text-slate-500 dark:text-slate-300">Loading board...</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           {ISSUE_COLUMNS.map((status) => (
             <section
               key={status}
-              className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3"
+              className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-300/20 dark:bg-indigo-500/5"
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => onDrop(status)}
             >
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-cyan-300">
                 {status.replace('_', ' ')}
               </h3>
               <motion.div layout className="space-y-3">
@@ -121,7 +121,7 @@ export const KanbanBoard = ({ token }: KanbanBoardProps) => {
                     }}
                     className="group"
                   >
-                    <div className="mb-1 flex items-center gap-1 text-[11px] text-slate-500">
+                    <div className="mb-1 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-300">
                       <GripVertical className="h-3 w-3" /> drag
                     </div>
                     <IssueCard issue={issue} />

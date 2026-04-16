@@ -4,6 +4,7 @@ import { AppShell } from '../components/layout/AppShell';
 import { KanbanBoard } from '../components/issues/KanbanBoard';
 import { AnnouncementsFeed } from '../components/announcements/AnnouncementsFeed';
 import { BookingGrid } from '../components/booking/BookingGrid';
+import { AnalyticsDashboard } from '../components/dashboard/AnalyticsDashboard';
 import { GlassCard } from '../components/ui/GlassCard';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { useAuth } from '../hooks/useAuth';
@@ -60,8 +61,11 @@ const AdminDashboard = () => {
 
   return (
     <AppShell title="Admin Operations Dashboard">
-      <section className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+      <AnalyticsDashboard token={token} />
+
+      <section className="mt-5 grid gap-5 xl:grid-cols-[1.6fr_1fr]">
         <KanbanBoard token={token} />
+
         <GlassCard interactive>
           <SectionHeader
             title="Broadcast Announcement"
@@ -112,7 +116,7 @@ const AdminDashboard = () => {
                 }
               />
             </div>
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={announcement.isSticky}
@@ -141,7 +145,7 @@ const AdminDashboard = () => {
         </GlassCard>
       </section>
 
-      <section className="mt-5 grid gap-5 lg:grid-cols-2">
+      <section className="mt-5 grid gap-5 xl:grid-cols-[1.15fr_1fr]">
         <AnnouncementsFeed token={token} />
         <BookingGrid token={token} isAdmin />
       </section>

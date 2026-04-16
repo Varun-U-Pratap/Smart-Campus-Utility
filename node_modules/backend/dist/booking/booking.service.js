@@ -14,6 +14,11 @@ const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 const realtime_gateway_1 = require("../realtime/realtime.gateway");
+const ROOM_BLOCKS = ['AB', 'LHC', 'ESB', 'DES'];
+const ROOM_FLOORS = [1, 2, 3, 4, 5, 6, 7];
+const ROOMS_PER_FLOOR = 12;
+const LAB_DEPARTMENTS = ['CSE', 'ISE', 'AIML'];
+const LABS_PER_DEPARTMENT = 4;
 let BookingService = class BookingService {
     prisma;
     realtimeGateway;
@@ -21,7 +26,52 @@ let BookingService = class BookingService {
         this.prisma = prisma;
         this.realtimeGateway = realtimeGateway;
     }
+    buildRoomCatalog() {
+        const classrooms = ROOM_BLOCKS.flatMap((block) => ROOM_FLOORS.flatMap((floor) => Array.from({ length: ROOMS_PER_FLOOR }, (_, offset) => {
+            const roomNo = floor * 100 + offset + 1;
+            return {
+                code: `${block}${roomNo}`,
+                name: `${block} ${roomNo}`,
+                building: block,
+                floor: `${floor}`,
+                capacity: 60,
+                type: client_1.RoomType.CLASSROOM,
+                isActive: true,
+            };
+        })));
+        const labs = LAB_DEPARTMENTS.flatMap((department) => Array.from({ length: LABS_PER_DEPARTMENT }, (_, index) => {
+            const labNo = index + 1;
+            return {
+                code: `${department}LAB${labNo}`,
+                name: `${department} Lab ${labNo}`,
+                building: `${department} Labs`,
+                floor: '1',
+                capacity: 40,
+                type: client_1.RoomType.LAB,
+                isActive: true,
+            };
+        }));
+        return [...classrooms, ...labs];
+    }
+    async ensureCampusRooms() {
+        const catalog = this.buildRoomCatalog();
+        const existingCount = await this.prisma.room.count({
+            where: {
+                code: {
+                    in: catalog.map((room) => room.code),
+                },
+            },
+        });
+        if (existingCount === catalog.length) {
+            return;
+        }
+        await this.prisma.room.createMany({
+            data: catalog,
+            skipDuplicates: true,
+        });
+    }
     async listRooms() {
+        await this.ensureCampusRooms();
         return this.prisma.room.findMany({
             where: { isActive: true },
             orderBy: [{ building: 'asc' }, { name: 'asc' }],
@@ -37,6 +87,7 @@ let BookingService = class BookingService {
         });
     }
     async availabilityGrid(from, to) {
+        await this.ensureCampusRooms();
         const now = new Date();
         const fromDate = from ? new Date(from) : now;
         const toDate = to
@@ -111,6 +162,7 @@ let BookingService = class BookingService {
             },
             select: {
                 id: true,
+                roomId: true,
                 title: true,
                 status: true,
                 startsAt: true,

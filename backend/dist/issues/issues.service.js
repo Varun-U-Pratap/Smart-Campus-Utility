@@ -66,6 +66,8 @@ let IssuesService = class IssuesService {
                 status: true,
                 priority: true,
                 category: true,
+                openedAt: true,
+                resolvedAt: true,
                 createdAt: true,
                 reporter: {
                     select: {

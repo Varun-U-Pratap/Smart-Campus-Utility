@@ -21,7 +21,19 @@ export interface Issue {
   status: IssueStatus;
   priority: string;
   category: string;
+  openedAt?: string;
+  resolvedAt?: string | null;
   createdAt: string;
+  reporter?: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: Role;
+  };
+  assignee?: {
+    id: string;
+    fullName: string;
+  } | null;
 }
 
 export interface AnnouncementTag {

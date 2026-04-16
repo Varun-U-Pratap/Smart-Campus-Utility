@@ -83,10 +83,10 @@ const StudentDashboard = () => {
             >
               <GlassCard interactive className="h-full">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-slate-500">{item.label}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-300">{item.label}</p>
                   <Icon className={`h-5 w-5 ${item.color}`} />
                 </div>
-                <p className="mt-3 font-display text-3xl font-bold text-slate-900">
+                <p className="mt-3 font-display text-3xl font-bold text-slate-900 dark:text-slate-100">
                   {item.value}
                 </p>
               </GlassCard>

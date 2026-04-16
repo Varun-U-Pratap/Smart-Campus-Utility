@@ -35,6 +35,7 @@ export declare class BookingController {
         id: string;
         title: string;
         status: import("@prisma/client").$Enums.BookingStatus;
+        roomId: string;
         startsAt: Date;
         endsAt: Date;
     }>;

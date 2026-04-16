@@ -23,6 +23,8 @@ export declare class IssuesController {
         priority: import("@prisma/client").$Enums.IssuePriority;
         status: import("@prisma/client").$Enums.IssueStatus;
         ticketNo: string;
+        openedAt: Date;
+        resolvedAt: Date | null;
         reporter: {
             email: string;
             fullName: string;
