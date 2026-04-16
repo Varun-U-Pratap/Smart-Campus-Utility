@@ -2,7 +2,11 @@
 
 Smart Campus Utility is a full-stack campus operations platform for issues, announcements, bookings, and role-based dashboards.
 
-Live deployment: https://smart-campus-utility.vercel.app/
+[Live deployment](https://smart-campus-utility.vercel.app/)
+
+[![Live on Vercel](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://smart-campus-utility.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![Database](https://img.shields.io/badge/Database-Neon-0F172A?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
 
 ## Stack
 
@@ -95,7 +99,7 @@ npm run test
 - Frontend is deployed on Vercel.
 - Backend API is deployed on Render.
 - PostgreSQL is hosted on Neon.
-- The live app URL is https://smart-campus-utility.vercel.app/.
+- The live app URL is [smart-campus-utility.vercel.app](https://smart-campus-utility.vercel.app/).
 
 ## Notes
 
