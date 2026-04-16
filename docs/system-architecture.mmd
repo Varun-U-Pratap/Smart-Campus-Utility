@@ -1,0 +1,60 @@
+flowchart TB
+  %% Smart Campus Utility - system architecture
+
+  subgraph C[Client Layer]
+    SPA[React SPA\nTailwind + Framer Motion\nRole-aware dashboards]
+  end
+
+  subgraph E[Edge]
+    LB[Reverse Proxy / API Gateway]
+  end
+
+  subgraph B[NestJS Application Layer]
+    API[REST Controllers]
+    WS[WebSocket Gateway\nAnnouncements + Notifications]
+
+    subgraph MOD[Domain Modules]
+      AUTH[Auth Module\nJWT + RBAC Guards]
+      ISSUE[Issue Tracker Module\nKanban workflow]
+      ANN[Announcements Module\nNews feed + sticky posts]
+      BOOK[Booking Module\nRoom availability + reservations]
+      USER[User Module\nStudent/Admin profiles]
+    end
+
+    subgraph CORE[Cross-Cutting]
+      PRISMA[Prisma Service]
+      CACHE[Redis Cache + Pub/Sub]
+      QUEUE[Background Jobs\n(email/push/webhook)]
+    end
+  end
+
+  subgraph D[Data Layer]
+    PG[(PostgreSQL)]
+    OBJ[(Object Storage\nIssue attachments)]
+  end
+
+  SPA -->|HTTPS REST| LB
+  SPA -->|WSS| LB
+  LB --> API
+  LB --> WS
+
+  API --> AUTH
+  API --> ISSUE
+  API --> ANN
+  API --> BOOK
+  API --> USER
+
+  AUTH --> PRISMA
+  ISSUE --> PRISMA
+  ANN --> PRISMA
+  BOOK --> PRISMA
+  USER --> PRISMA
+
+  PRISMA --> PG
+  ISSUE --> OBJ
+
+  ANN <--> CACHE
+  WS <--> CACHE
+  ISSUE --> QUEUE
+  BOOK --> QUEUE
+  ANN --> QUEUE

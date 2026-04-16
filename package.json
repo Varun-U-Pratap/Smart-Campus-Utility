@@ -1,0 +1,32 @@
+{
+  "name": "smart_campus_utility",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npm run test --workspace backend && npm run test --workspace frontend",
+    "dev": "npm run start:dev --workspace backend",
+    "dev:web": "npm run dev --workspace frontend",
+    "dev:all": "concurrently -n api,web \"npm:dev\" \"npm:dev:web\"",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prisma": "^6.16.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2"
+  }
+}
