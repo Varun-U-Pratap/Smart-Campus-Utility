@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, CalendarCheck2, Newspaper } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
@@ -10,25 +10,49 @@ import { IssueWizard } from '../components/issues/IssueWizard';
 import { AnnouncementsFeed } from '../components/announcements/AnnouncementsFeed';
 import { BookingGrid } from '../components/booking/BookingGrid';
 
+const fetchMyIssues = async (token: string) => apiRequest<Issue[]>('/issues/mine', { token });
+
 const StudentDashboard = () => {
   const { token } = useAuth();
   const [myIssues, setMyIssues] = useState<Issue[]>([]);
 
-  const loadIssues = async () => {
+  const refreshIssues = useCallback(async () => {
     if (!token) {
+      setMyIssues([]);
       return;
     }
 
     try {
-      const result = await apiRequest<Issue[]>('/issues/mine', { token });
+      const result = await fetchMyIssues(token);
       setMyIssues(result);
     } catch {
       setMyIssues([]);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    void loadIssues();
+    if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- token revocation requires immediate local reset.
+      setMyIssues([]);
+      return;
+    }
+
+    let isActive = true;
+    fetchMyIssues(token)
+      .then((result) => {
+        if (isActive) {
+          setMyIssues(result);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setMyIssues([]);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, [token]);
 
   const stats = useMemo(
@@ -96,7 +120,7 @@ const StudentDashboard = () => {
       </motion.section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <IssueWizard token={token} onSubmitted={loadIssues} />
+        <IssueWizard token={token} onSubmitted={refreshIssues} />
         <AnnouncementsFeed token={token} />
       </section>
 

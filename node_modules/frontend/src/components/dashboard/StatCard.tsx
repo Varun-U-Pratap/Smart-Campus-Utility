@@ -42,6 +42,8 @@ export const StatCard = ({
       whileTap={{ scale: 0.99 }}
       className={clsx(
         'relative h-full w-full overflow-hidden rounded-2xl border border-white/70 bg-white/70 p-4 text-left backdrop-blur-xl transition dark:border-indigo-400/20 dark:bg-deepmidnight-elevated/80',
+        isActive &&
+          'ring-2 ring-indigo-300/70 shadow-[0_16px_35px_rgba(99,102,241,0.22)] dark:ring-cyan-300/45 dark:shadow-[0_16px_40px_rgba(34,211,238,0.18)]',
         highPriority && !isActive && 'animate-priorityPulse',
       )}
     >

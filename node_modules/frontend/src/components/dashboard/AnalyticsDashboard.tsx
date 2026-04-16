@@ -70,7 +70,11 @@ const buildTrendData = (issues: Issue[]): ResolutionPoint[] => {
     }
   }
 
-  return points.map(({ key: _key, ...point }) => point);
+  return points.map((point) => ({
+    day: point.day,
+    reported: point.reported,
+    resolved: point.resolved,
+  }));
 };
 
 const buildCategoryData = (issues: Issue[]): CategoryDatum[] => {

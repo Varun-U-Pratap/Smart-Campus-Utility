@@ -22,11 +22,19 @@ const AdminDashboard = () => {
     tags: '',
   });
 
+  const hasValidAnnouncement =
+    announcement.title.trim().length >= 6 && announcement.body.trim().length >= 20;
+
   if (!token) {
     return null;
   }
 
   const publish = async () => {
+    if (!hasValidAnnouncement) {
+      setPublishError('Title must be at least 6 chars and body at least 20 chars.');
+      return;
+    }
+
     try {
       setIsPublishing(true);
       setPublishError(null);
@@ -90,6 +98,9 @@ const AdminDashboard = () => {
                 setAnnouncement((prev) => ({ ...prev, body: event.target.value }))
               }
             />
+            <p className="text-xs text-slate-500 dark:text-slate-300">
+              Keep it concise and clear. Minimum 6 chars for title and 20 chars for body.
+            </p>
             <div className="grid gap-3 md:grid-cols-2">
               <select
                 className="field"
@@ -132,15 +143,15 @@ const AdminDashboard = () => {
           </div>
 
           <button
-            className="btn-primary mt-4"
-            disabled={isPublishing}
+            className="btn-primary mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isPublishing || !hasValidAnnouncement}
             onClick={publish}
           >
             {isPublishing ? 'Publishing...' : 'Publish Announcement'}
           </button>
 
           {publishError ? (
-            <p className="mt-3 text-sm text-rose-600">{publishError}</p>
+            <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{publishError}</p>
           ) : null}
         </GlassCard>
       </section>

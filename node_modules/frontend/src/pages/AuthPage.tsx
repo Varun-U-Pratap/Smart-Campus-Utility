@@ -30,17 +30,17 @@ const AuthPage = () => {
   });
 
   useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('scu-theme', isDarkMode ? 'deep-midnight' : 'light');
+  }, [isDarkMode]);
+
+  useEffect(() => {
     if (!user) {
       return;
     }
     navigate(user.role === 'ADMIN' ? '/admin' : '/student', { replace: true });
   }, [navigate, user]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('scu-theme', isDarkMode ? 'deep-midnight' : 'light');
-  }, [isDarkMode]);
 
   const nextThemeLabel = isDarkMode ? 'Switch to Light' : 'Switch to Deep Midnight';
 
@@ -301,7 +301,7 @@ const AuthPage = () => {
                 : 'Create Account'}
           </button>
 
-          {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+          {error ? <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
         </motion.form>
       </div>
     </div>

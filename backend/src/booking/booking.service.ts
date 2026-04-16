@@ -147,7 +147,9 @@ export class BookingService {
     }
 
     if (startsAt >= endsAt) {
-      throw new BadRequestException('Start time must be earlier than end time.');
+      throw new BadRequestException(
+        'Start time must be earlier than end time.',
+      );
     }
 
     const room = await this.prisma.room.findUnique({

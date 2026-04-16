@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Columns3, GripVertical } from 'lucide-react';
 import { apiRequest } from '../../lib/api';
@@ -40,7 +40,7 @@ export const KanbanBoard = ({ token }: KanbanBoardProps) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -51,11 +51,11 @@ export const KanbanBoard = ({ token }: KanbanBoardProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const grouped = useMemo(() => groupIssuesByStatus(issues), [issues]);
 
@@ -133,7 +133,7 @@ export const KanbanBoard = ({ token }: KanbanBoardProps) => {
         </div>
       )}
 
-      {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
     </GlassCard>
   );
 };

@@ -48,6 +48,11 @@ export class BookingController {
     @CurrentUser() user: RequestUser,
     @Body() dto: UpdateBookingStatusDto,
   ) {
-    return this.bookingService.updateStatus(bookingId, user.sub, user.role, dto);
+    return this.bookingService.updateStatus(
+      bookingId,
+      user.sub,
+      user.role,
+      dto,
+    );
   }
 }

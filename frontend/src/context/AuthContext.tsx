@@ -2,7 +2,6 @@ import {
   createContext,
   PropsWithChildren,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -35,6 +34,7 @@ interface AuthContextValue {
   refreshProfile: () => Promise<void>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- this module must export context and provider together in the current workspace setup.
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const readSession = (): AuthSession | null => {
@@ -52,13 +52,8 @@ const readSession = (): AuthSession | null => {
 };
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [session, setSession] = useState<AuthSession | null>(null);
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
-
-  useEffect(() => {
-    setSession(readSession());
-    setIsBootstrapping(false);
-  }, []);
+  const [session, setSession] = useState<AuthSession | null>(readSession);
+  const [isBootstrapping] = useState(false);
 
   const persist = useCallback((next: AuthSession | null) => {
     setSession(next);

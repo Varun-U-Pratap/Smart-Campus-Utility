@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Megaphone } from 'lucide-react';
 import { Socket } from 'socket.io-client';
@@ -66,7 +66,7 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>('');
 
-  const load = async (nextCategory?: string) => {
+  const load = useCallback(async (nextCategory?: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -80,11 +80,11 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     void load(category || undefined);
-  }, [category]);
+  }, [category, load]);
 
   useEffect(() => {
     const socket: Socket = createRealtimeClient(token);
@@ -161,7 +161,7 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
         </motion.div>
       )}
 
-      {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
     </GlassCard>
   );
 };

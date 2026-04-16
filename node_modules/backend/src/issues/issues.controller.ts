@@ -25,10 +25,7 @@ export class IssuesController {
 
   @Post()
   @Roles(Role.STUDENT)
-  create(
-    @CurrentUser() user: RequestUser,
-    @Body() dto: CreateIssueDto,
-  ) {
+  create(@CurrentUser() user: RequestUser, @Body() dto: CreateIssueDto) {
     return this.issuesService.createIssue(user.sub, dto);
   }
 

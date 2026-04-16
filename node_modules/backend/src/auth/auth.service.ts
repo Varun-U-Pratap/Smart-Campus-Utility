@@ -31,7 +31,10 @@ export class AuthService {
       throw new ConflictException('Email is already registered.');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, AuthService.SALT_ROUNDS);
+    const passwordHash = await bcrypt.hash(
+      dto.password,
+      AuthService.SALT_ROUNDS,
+    );
 
     const createdUser = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -85,7 +88,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials.');
@@ -94,7 +100,9 @@ export class AuthService {
     return this.issueSession(user);
   }
 
-  private async issueSession(user: Pick<User, 'id' | 'email' | 'fullName' | 'role'>) {
+  private async issueSession(
+    user: Pick<User, 'id' | 'email' | 'fullName' | 'role'>,
+  ) {
     const payload: RequestUser = {
       sub: user.id,
       email: user.email,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, CheckCircle2 } from 'lucide-react';
 import { apiRequest } from '../../lib/api';
 import { BookingStatus, Room } from '../../types/domain';
@@ -61,7 +61,7 @@ export const BookingGrid = ({ token, isAdmin = false }: BookingGridProps) => {
     };
   }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -75,11 +75,11 @@ export const BookingGrid = ({ token, isAdmin = false }: BookingGridProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [bookingWindow.fromIso, bookingWindow.toIso, token]);
 
   useEffect(() => {
     void load();
-  }, [token]);
+  }, [load]);
 
   const pending = useMemo(
     () =>
@@ -313,6 +313,12 @@ export const BookingGrid = ({ token, isAdmin = false }: BookingGridProps) => {
         </div>
       ) : (
         <div className="space-y-3">
+          {roomsWithUpcomingBookings.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600 dark:border-cyan-300/20 dark:bg-deepmidnight-elevated/80 dark:text-slate-200">
+              No upcoming bookings found for the selected filters and date range.
+            </div>
+          ) : null}
+
           {roomsWithUpcomingBookings.map((room) => (
             <div
               key={room.id}
@@ -407,7 +413,7 @@ export const BookingGrid = ({ token, isAdmin = false }: BookingGridProps) => {
         </div>
       ) : null}
 
-      {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
     </GlassCard>
   );
 };

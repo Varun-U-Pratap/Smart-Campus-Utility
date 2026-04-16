@@ -70,7 +70,12 @@ let AnnouncementsService = class AnnouncementsService {
                 category: category ?? undefined,
                 OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
                 visibility: role === client_1.Role.ADMIN
-                    ? { in: [client_1.AnnouncementVisibility.PUBLIC, client_1.AnnouncementVisibility.ADMINS_ONLY] }
+                    ? {
+                        in: [
+                            client_1.AnnouncementVisibility.PUBLIC,
+                            client_1.AnnouncementVisibility.ADMINS_ONLY,
+                        ],
+                    }
                     : {
                         in: [
                             client_1.AnnouncementVisibility.PUBLIC,

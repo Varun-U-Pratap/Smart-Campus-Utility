@@ -1,7 +1,4 @@
-import {
-  AnnouncementCategory,
-  AnnouncementVisibility,
-} from '@prisma/client';
+import { AnnouncementCategory, AnnouncementVisibility } from '@prisma/client';
 import {
   IsArray,
   IsBoolean,

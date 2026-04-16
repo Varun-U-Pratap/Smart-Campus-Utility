@@ -70,7 +70,12 @@ export class AnnouncementsService {
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
         visibility:
           role === Role.ADMIN
-            ? { in: [AnnouncementVisibility.PUBLIC, AnnouncementVisibility.ADMINS_ONLY] }
+            ? {
+                in: [
+                  AnnouncementVisibility.PUBLIC,
+                  AnnouncementVisibility.ADMINS_ONLY,
+                ],
+              }
             : {
                 in: [
                   AnnouncementVisibility.PUBLIC,
