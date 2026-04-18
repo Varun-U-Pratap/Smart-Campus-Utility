@@ -78,6 +78,7 @@ model User {
   fullName                 String
   role                     Role               @default(STUDENT)
   isActive                 Boolean            @default(true)
+  isEmailVerified          Boolean            @default(false)
   phoneNumber              String?
   avatarUrl                String?
   studentProfile           StudentProfile?
@@ -326,4 +327,15 @@ model Booking {
   @@index([roomId, startsAt, endsAt])
   @@index([userId, startsAt])
   @@index([status, startsAt])
+}
+
+model EmailVerificationOtp {
+  id        String   @id @default(uuid())
+  email     String
+  code      String   @unique
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email, expiresAt])
 }

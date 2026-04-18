@@ -7,9 +7,10 @@ import { Role } from '../types/domain';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { user, login, register } = useAuth();
+  const { user, login, register, verifyEmail, resendOtp, pendingVerificationEmail } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -18,6 +19,7 @@ const AuthPage = () => {
     }
     return localStorage.getItem('scu-theme') === 'deep-midnight';
   });
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const [form, setForm] = useState({
     email: '',
@@ -27,6 +29,7 @@ const AuthPage = () => {
     studentId: '',
     department: '',
     employeeCode: '',
+    otpCode: '',
   });
 
   useEffect(() => {
@@ -34,6 +37,20 @@ const AuthPage = () => {
     root.classList.toggle('dark', isDarkMode);
     localStorage.setItem('scu-theme', isDarkMode ? 'deep-midnight' : 'light');
   }, [isDarkMode]);
+
+  useEffect(() => {
+    if (pendingVerificationEmail) {
+      setShowOtpVerification(true);
+      setForm((prev) => ({ ...prev, email: pendingVerificationEmail }));
+    }
+  }, [pendingVerificationEmail]);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (!user) {
@@ -50,9 +67,16 @@ const AuthPage = () => {
     setIsSubmitting(true);
 
     try {
-      if (mode === 'login') {
+      if (showOtpVerification) {
+        // Handle OTP verification
+        await verifyEmail({
+          email: form.email,
+          code: form.otpCode,
+        });
+      } else if (mode === 'login') {
         await login({ email: form.email, password: form.password });
       } else {
+        // Handle registration
         await register({
           email: form.email,
           password: form.password,
@@ -65,6 +89,20 @@ const AuthPage = () => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await resendOtp({ email: form.email });
+      setResendCooldown(60);
+      setForm((prev) => ({ ...prev, otpCode: '' }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend OTP.');
     } finally {
       setIsSubmitting(false);
     }
@@ -140,168 +178,230 @@ const AuthPage = () => {
           onSubmit={submit}
           className="h-fit self-center rounded-3xl border border-white/70 bg-white/85 p-6 shadow-[0_16px_40px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-cyan-300/28 dark:bg-[#091327]/96"
         >
-          <div className="mb-4 flex gap-2 rounded-xl bg-slate-100 p-1 dark:bg-[#0C1A34]">
-            <button
-              type="button"
-              onClick={() => setMode('login')}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                mode === 'login'
-                  ? 'bg-indigo-500 text-white dark:bg-cyan-600 dark:text-white'
-                  : 'text-slate-700 hover:bg-white dark:text-slate-100 dark:hover:bg-slate-700/60'
-              }`}
+          {showOtpVerification ? (
+            // OTP Verification Form
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="space-y-4"
             >
-              Login
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('register')}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                mode === 'register'
-                  ? 'bg-indigo-500 text-white dark:bg-cyan-600 dark:text-white'
-                  : 'text-slate-700 hover:bg-white dark:text-slate-100 dark:hover:bg-slate-700/60'
-              }`}
-            >
-              Register
-            </button>
-          </div>
+              <div>
+                <h3 className="font-display text-lg font-semibold text-slate-900 dark:text-white">
+                  Verify Your Email
+                </h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  We sent a 6-digit code to {form.email}
+                </p>
+              </div>
 
-          <motion.div layout className="space-y-3">
-            <AnimatePresence initial={false}>
-              {mode === 'register' ? (
-                <motion.input
-                  layout
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="field"
-                  placeholder="Full name"
-                  value={form.fullName}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, fullName: event.target.value }))
-                  }
-                />
+              <input
+                className="field text-center text-2xl tracking-widest"
+                placeholder="000000"
+                maxLength={6}
+                value={form.otpCode}
+                onChange={(event) => {
+                  const value = event.target.value.replace(/\D/g, '').slice(0, 6);
+                  setForm((prev) => ({ ...prev, otpCode: value }));
+                }}
+              />
+
+              <button
+                disabled={isSubmitting || form.otpCode.length !== 6}
+                className="btn-primary mt-5 w-full justify-center disabled:opacity-50"
+              >
+                {isSubmitting ? 'Verifying...' : 'Verify Email'}
+              </button>
+
+              <button
+                type="button"
+                disabled={resendCooldown > 0 || isSubmitting}
+                onClick={handleResendOtp}
+                className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                {resendCooldown > 0
+                  ? `Resend code in ${resendCooldown}s`
+                  : 'Resend Code'}
+              </button>
+
+              {error ? (
+                <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p>
               ) : null}
-            </AnimatePresence>
-
-            <input
-              className="field"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, email: event.target.value }))
-              }
-            />
-
-            <input
-              className="field"
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, password: event.target.value }))
-              }
-            />
-
-            <AnimatePresence initial={false}>
-              {mode === 'register' ? (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="space-y-3"
+            </motion.div>
+          ) : (
+            // Login/Register Form
+            <motion.div layout className="space-y-4">
+              <div className="mb-4 flex gap-2 rounded-xl bg-slate-100 p-1 dark:bg-[#0C1A34]">
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    mode === 'login'
+                      ? 'bg-indigo-500 text-white dark:bg-cyan-600 dark:text-white'
+                      : 'text-slate-700 hover:bg-white dark:text-slate-100 dark:hover:bg-slate-700/60'
+                  }`}
                 >
-                  <select
-                    className="field"
-                    value={form.role}
-                    onChange={(event) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        role: event.target.value as Role,
-                      }))
-                    }
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('register')}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    mode === 'register'
+                      ? 'bg-indigo-500 text-white dark:bg-cyan-600 dark:text-white'
+                      : 'text-slate-700 hover:bg-white dark:text-slate-100 dark:hover:bg-slate-700/60'
+                  }`}
+                >
+                  Register
+                </button>
+              </div>
+
+              <motion.div layout className="space-y-3">
+              </motion.div>
+            </motion.div>
+          )}
+
+          <AnimatePresence initial={false}>
+            {!showOtpVerification && mode === 'register' ? (
+              <motion.input
+                layout
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="field"
+                placeholder="Full name"
+                value={form.fullName}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, fullName: event.target.value }))
+                }
+              />
+            ) : null}
+          </AnimatePresence>
+
+          {!showOtpVerification && (
+            <>
+              <input
+                className="field"
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, email: event.target.value }))
+                }
+              />
+
+              <input
+                className="field"
+                type="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, password: event.target.value }))
+                }
+              />
+
+              <AnimatePresence initial={false}>
+                {mode === 'register' ? (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                    className="space-y-3"
                   >
-                    <option value="STUDENT">Student</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+                    <select
+                      className="field"
+                      value={form.role}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          role: event.target.value as Role,
+                        }))
+                      }
+                    >
+                      <option value="STUDENT">Student</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
 
-                  <AnimatePresence mode="wait" initial={false}>
-                    {form.role === 'STUDENT' ? (
-                      <motion.div
-                        key="student-fields"
-                        layout
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="space-y-3"
-                      >
-                        <input
-                          className="field"
-                          placeholder="Student ID"
-                          value={form.studentId}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              studentId: event.target.value,
-                            }))
-                          }
-                        />
-                        <input
-                          className="field"
-                          placeholder="Department"
-                          value={form.department}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              department: event.target.value,
-                            }))
-                          }
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="admin-fields"
-                        layout
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                      >
-                        <input
-                          className="field"
-                          placeholder="Employee code"
-                          value={form.employeeCode}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              employeeCode: event.target.value,
-                            }))
-                          }
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {form.role === 'STUDENT' ? (
+                        <motion.div
+                          key="student-fields"
+                          layout
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                          className="space-y-3"
+                        >
+                          <input
+                            className="field"
+                            placeholder="Student ID"
+                            value={form.studentId}
+                            onChange={(event) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                studentId: event.target.value,
+                              }))
+                            }
+                          />
+                          <input
+                            className="field"
+                            placeholder="Department"
+                            value={form.department}
+                            onChange={(event) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                department: event.target.value,
+                              }))
+                            }
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="admin-fields"
+                          layout
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                        >
+                          <input
+                            className="field"
+                            placeholder="Employee code"
+                            value={form.employeeCode}
+                            onChange={(event) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                employeeCode: event.target.value,
+                              }))
+                            }
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+
+              <button
+                disabled={isSubmitting}
+                className="btn-primary mt-5 w-full justify-center disabled:opacity-50"
+              >
+                {isSubmitting
+                  ? 'Processing...'
+                  : mode === 'login'
+                    ? 'Sign In'
+                    : 'Create Account'}
+              </button>
+
+              {error ? (
+                <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p>
               ) : null}
-            </AnimatePresence>
-          </motion.div>
-
-          <button
-            disabled={isSubmitting}
-            className="btn-primary mt-5 w-full justify-center disabled:opacity-50"
-          >
-            {isSubmitting
-              ? 'Processing...'
-              : mode === 'login'
-                ? 'Sign In'
-                : 'Create Account'}
-          </button>
-
-          {error ? <p className="mt-3 text-sm text-rose-600 dark:text-rose-300">{error}</p> : null}
+            </>
+          )}
         </motion.form>
       </div>
     </div>

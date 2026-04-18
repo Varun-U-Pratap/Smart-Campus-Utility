@@ -23,13 +23,25 @@ interface RegisterDto extends LoginDto {
   employeeCode?: string;
 }
 
+interface VerifyEmailOtpDto {
+  email: string;
+  code: string;
+}
+
+interface ResendOtpDto {
+  email: string;
+}
+
 interface AuthContextValue {
   isBootstrapping: boolean;
   session: AuthSession | null;
   user: AuthUser | null;
   token: string | null;
+  pendingVerificationEmail: string | null;
   login: (dto: LoginDto) => Promise<void>;
-  register: (dto: RegisterDto) => Promise<void>;
+  register: (dto: RegisterDto) => Promise<{ email: string; requiresVerification: boolean }>;
+  verifyEmail: (dto: VerifyEmailOtpDto) => Promise<void>;
+  resendOtp: (dto: ResendOtpDto) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -58,9 +70,13 @@ const readSession = (): AuthSession | null => {
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [session, setSession] = useState<AuthSession | null>(readSession);
   const [isBootstrapping] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
   const persist = useCallback((next: AuthSession | null) => {
     setSession(next);
+    if (next) {
+      setPendingVerificationEmail(null);
+    }
     try {
       if (!next) {
         localStorage.removeItem(STORAGE_KEY);
@@ -85,13 +101,35 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const register = useCallback(
     async (dto: RegisterDto) => {
-      const next = await apiRequest<AuthSession>('/auth/register', {
+      const response = await apiRequest<{ email: string; requiresVerification: boolean }>('/auth/register', {
+        method: 'POST',
+        body: dto,
+      });
+      setPendingVerificationEmail(response.email);
+      return response;
+    },
+    [],
+  );
+
+  const verifyEmail = useCallback(
+    async (dto: VerifyEmailOtpDto) => {
+      const next = await apiRequest<AuthSession>('/auth/verify-email', {
         method: 'POST',
         body: dto,
       });
       persist(next);
     },
     [persist],
+  );
+
+  const resendOtp = useCallback(
+    async (dto: ResendOtpDto) => {
+      await apiRequest<{ message: string; email: string }>('/auth/resend-otp', {
+        method: 'POST',
+        body: dto,
+      });
+    },
+    [],
   );
 
   const logout = useCallback(() => {
@@ -129,12 +167,25 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       session,
       user: session?.user ?? null,
       token: session?.accessToken ?? null,
+      pendingVerificationEmail,
       login,
       register,
+      verifyEmail,
+      resendOtp,
       logout,
       refreshProfile,
     }),
-    [isBootstrapping, session, login, register, logout, refreshProfile],
+    [
+      isBootstrapping,
+      session,
+      pendingVerificationEmail,
+      login,
+      register,
+      verifyEmail,
+      resendOtp,
+      logout,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
