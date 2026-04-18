@@ -38,15 +38,19 @@ interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const readSession = (): AuthSession | null => {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
   try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
     return JSON.parse(raw) as AuthSession;
   } catch {
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore localStorage errors and treat as logged out.
+    }
     return null;
   }
 };
@@ -57,11 +61,15 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const persist = useCallback((next: AuthSession | null) => {
     setSession(next);
-    if (!next) {
-      localStorage.removeItem(STORAGE_KEY);
-      return;
+    try {
+      if (!next) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Ignore localStorage write failures so auth state still works in-memory.
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }, []);
 
   const login = useCallback(

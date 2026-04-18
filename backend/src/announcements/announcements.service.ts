@@ -46,12 +46,28 @@ export class AnnouncementsService {
       select: {
         id: true,
         title: true,
+        body: true,
         category: true,
         visibility: true,
         isSticky: true,
         isPublished: true,
         publishedAt: true,
-        createdAt: true,
+        author: {
+          select: {
+            fullName: true,
+          },
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                colorHex: true,
+              },
+            },
+          },
+        },
       },
     });
 

@@ -13,8 +13,18 @@ interface AnnouncementsFeedProps {
   token: string;
 }
 
+const normalizeAnnouncement = (item: Announcement): Announcement => ({
+  ...item,
+  body: item.body ?? '',
+  author: item.author ?? { fullName: 'Campus Admin' },
+  tags: Array.isArray(item.tags) ? item.tags : [],
+});
+
 const AnnouncementItem = memo(
   ({ item, onRead }: { item: Announcement; onRead: (id: string) => void }) => {
+    const authorName = item.author?.fullName ?? 'Campus Admin';
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+
     return (
       <motion.article
         layout
@@ -32,7 +42,7 @@ const AnnouncementItem = memo(
           <span className="rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-600 dark:bg-cyan-400/15 dark:text-cyan-200">
             {item.category}
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-300">by {item.author.fullName}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-300">by {authorName}</span>
         </div>
 
         <h4 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">{item.title}</h4>
@@ -40,7 +50,7 @@ const AnnouncementItem = memo(
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-1">
-            {item.tags.map(({ tag }) => (
+            {tags.map(({ tag }) => (
               <span
                 key={tag.id}
                 className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200"
@@ -74,7 +84,7 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
       const result = await apiRequest<Announcement[]>(`/announcements/feed${query}`, {
         token,
       });
-      setItems(result);
+      setItems(result.map(normalizeAnnouncement));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load feed.');
     } finally {
@@ -89,7 +99,11 @@ export const AnnouncementsFeed = ({ token }: AnnouncementsFeedProps) => {
   useEffect(() => {
     const socket: Socket = createRealtimeClient(token);
     socket.on('announcement.published', (payload: unknown) => {
-      const item = payload as Announcement;
+      if (!payload || typeof payload !== 'object') {
+        return;
+      }
+
+      const item = normalizeAnnouncement(payload as Announcement);
       setItems((prev) => {
         if (prev.some((announcement) => announcement.id === item.id)) {
           return prev;
